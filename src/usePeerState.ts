@@ -77,6 +77,7 @@ function useHostState<T>(identifier: string | undefined, initialState?: T) {
         return () => {
             newPeer.destroy();
             setPeer(undefined);
+            setId(undefined);
             setConnections([]);
         }
     }, [identifier]);
