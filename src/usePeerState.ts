@@ -1,17 +1,16 @@
 import Peer, { DataConnection } from 'peerjs';
 import { useEffect, useRef, useState } from 'react';
 
-function useClientState<T>(selfId: string | undefined, peerId: string | undefined): [T | undefined, (value: T) => void, connected: boolean];
-function useClientState<T>(selfId: string | undefined, peerId: string | undefined, initialState: T): [T, (value: T) => void, connected: boolean];
-function useClientState<T>(selfId: string | undefined, peerId: string | undefined, initialState?: T): [T | undefined, (value: T) => void, connected: boolean] {
+function useClientState<T>(peerId: string | undefined): [T | undefined, (value: T) => void, connected: boolean];
+function useClientState<T>(peerId: string | undefined, initialState: T): [T, (value: T) => void, connected: boolean];
+function useClientState<T>(peerId: string | undefined, initialState?: T): [T | undefined, (value: T) => void, connected: boolean] {
     const [state, setState] = useState(initialState);
 
     const [peer, setPeer] = useState<Peer>();
     const [connection, setConnection] = useState<DataConnection>();
 
     useEffect(() => {
-        if (selfId === undefined) return;
-        const newPeer = new Peer(selfId);
+        const newPeer = new Peer();
 
         setPeer(newPeer);
         return () => {
@@ -19,7 +18,7 @@ function useClientState<T>(selfId: string | undefined, peerId: string | undefine
             setPeer(undefined);
             setConnection(undefined);
         }
-    }, [selfId]);
+    }, []);
 
     useEffect(() => {
         if (peer === undefined || peerId === undefined) return;
@@ -52,9 +51,10 @@ function useClientState<T>(selfId: string | undefined, peerId: string | undefine
     return [state, handleSetState, connection !== undefined];
 }
 
-function useHostState<T>(selfId: string | undefined): [T | undefined, (value: T) => void, connections: number];
-function useHostState<T>(selfId: string | undefined, initialState: T): [T, (value: T) => void, connections: number];
-function useHostState<T>(selfId: string | undefined, initialState?: T): [T | undefined, (value: T) => void, connections: number] {
+function useHostState<T>(): [state: T | undefined, setState: (value: T) => void, identifier: string | undefined, connections: number];
+function useHostState<T>(initialState: T): [state: T, setState: (value: T) => void, identifier: string | undefined, connections: number];
+function useHostState<T>(initialState?: T) {
+    const [id, setId] = useState<string>();
     const [state, setState] = useState(initialState);
     const stateRef = useRef(state);
     stateRef.current = state;
@@ -63,8 +63,8 @@ function useHostState<T>(selfId: string | undefined, initialState?: T): [T | und
     const [connections, setConnections] = useState<DataConnection[]>([]);
 
     useEffect(() => {
-        if (selfId === undefined) return;
-        const newPeer = new Peer(selfId);
+        const newPeer = new Peer();
+        newPeer.on('open', () => setId(newPeer.id!));
 
         newPeer.on('connection', newConnection => {
             setConnections(connections => [...connections, newConnection]);
@@ -79,7 +79,7 @@ function useHostState<T>(selfId: string | undefined, initialState?: T): [T | und
             setPeer(undefined);
             setConnections([]);
         }
-    }, [selfId]);
+    }, []);
 
     useEffect(() => {
         connections.forEach(connection => {
@@ -113,7 +113,7 @@ function useHostState<T>(selfId: string | undefined, initialState?: T): [T | und
         connections.forEach(e => e.send(value));
     }
 
-    return [state, handleSetState, connections.length];
+    return [state, handleSetState, id, connections.length];
 }
 
 export { useClientState, useHostState };

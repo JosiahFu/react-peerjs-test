@@ -1,16 +1,20 @@
+import { useState } from 'react';
 import StringInput from './StringInput';
 
 function Chat({
     messages,
     setMessages,
-    id,
 }: {
-    id: string;
     messages: string[];
     setMessages: (messages: string[]) => void;
 }) {
+    const [name, setName] = useState('');
+
     return (
         <>
+            <h2>Name</h2>
+            <StringInput onSubmit={setName} />
+
             <div>
                 {messages.map((e, i) => (
                     <p key={i}>{e}</p>
@@ -18,7 +22,7 @@ function Chat({
             </div>
             <StringInput
                 onSubmit={value =>
-                    setMessages([...messages, `${id}: ${value}`])
+                    setMessages([...messages, `${name}: ${value}`])
                 }
                 clear
             />

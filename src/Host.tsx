@@ -1,27 +1,19 @@
-import { useState } from 'react';
 import Chat from './Chat';
-import StringInput from './StringInput';
 import { useHostState } from './usePeerState';
 
 function Host() {
-    const [id, setId] = useState<string>('');
-
-    const [messages, setMessages, connections] = useHostState<string[]>(
-        id || undefined,
-        []
-    );
+    const [messages, setMessages, id, connections] = useHostState<string[]>([]);
 
     return (
         <>
             <h1>Peerjs test</h1>
-            <p>Id</p>
-            <StringInput onSubmit={setId} />
+            <p>Id: {id ?? 'None'}</p>
             {connections ? (
                 <p>{connections} connected</p>
             ) : (
                 <p>None are connected</p>
             )}
-            <Chat id={id || ''} messages={messages} setMessages={setMessages} />
+            <Chat messages={messages} setMessages={setMessages} />
         </>
     );
 }
