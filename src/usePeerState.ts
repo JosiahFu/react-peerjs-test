@@ -1,5 +1,5 @@
 import Peer, { DataConnection } from 'peerjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 function useClientState<T>(selfId: string | undefined, peerId: string | undefined): [T | undefined, (value: T) => void, connected: boolean];
 function useClientState<T>(selfId: string | undefined, peerId: string | undefined, initialState: T): [T, (value: T) => void, connected: boolean];
@@ -12,10 +12,6 @@ function useClientState<T>(selfId: string | undefined, peerId: string | undefine
     useEffect(() => {
         if (selfId === undefined) return;
         const newPeer = new Peer(selfId);
-
-        newPeer.on('connection', newConnection => {
-            setConnection(newConnection);
-        });
 
         setPeer(newPeer);
         return () => {
@@ -42,6 +38,9 @@ function useClientState<T>(selfId: string | undefined, peerId: string | undefine
         });
         connection.on('close', () => {
             setConnection(undefined);
+        });
+        connection.on('error', error => {
+            alert(`An error occurred: ${error.type}`)
         })
     }, [connection])
 
@@ -57,6 +56,8 @@ function useHostState<T>(selfId: string | undefined): [T | undefined, (value: T)
 function useHostState<T>(selfId: string | undefined, initialState: T): [T, (value: T) => void, connections: number];
 function useHostState<T>(selfId: string | undefined, initialState?: T): [T | undefined, (value: T) => void, connections: number] {
     const [state, setState] = useState(initialState);
+    const stateRef = useRef(state);
+    stateRef.current = state;
 
     const [_, setPeer] = useState<Peer>();
     const [connections, setConnections] = useState<DataConnection[]>([]);
@@ -67,6 +68,9 @@ function useHostState<T>(selfId: string | undefined, initialState?: T): [T | und
 
         newPeer.on('connection', newConnection => {
             setConnections(connections => [...connections, newConnection]);
+            newConnection.on('open', () => {
+                newConnection.send(stateRef.current);
+            });
         });
 
         setPeer(newPeer);
@@ -89,15 +93,20 @@ function useHostState<T>(selfId: string | undefined, initialState?: T): [T | und
             connection.on('close', () => {
                 setConnections(connections.filter(e => e !== connection));
             })
+
+            connection.on('error', error => {
+                alert(`An error occurred: ${error.type}`)
+            })
         });
 
         return () => {
             connections.forEach(connection => {
                 connection.off('data');
                 connection.off('close');
+                connection.off('error');
             });
         }
-    }, [connections])
+    }, [connections]);
 
     const handleSetState = (value: T) => {
         setState(value);

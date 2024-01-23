@@ -4,9 +4,12 @@ import StringInput from './StringInput';
 import { useHostState } from './usePeerState';
 
 function Host() {
-    const [id, setId] = useState<string>();
+    const [id, setId] = useState<string>('');
 
-    const [messages, setMessages, connections] = useHostState<string[]>(id, []);
+    const [messages, setMessages, connections] = useHostState<string[]>(
+        id || undefined,
+        []
+    );
 
     return (
         <>

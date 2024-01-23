@@ -4,12 +4,12 @@ import StringInput from './StringInput';
 import { useClientState } from './usePeerState';
 
 function Client() {
-    const [id, setId] = useState<string>();
-    const [friend, setFriend] = useState<string>();
+    const [id, setId] = useState<string>('');
+    const [friend, setFriend] = useState<string>('');
 
     const [messages, setMessages, connected] = useClientState<string[]>(
-        id,
-        friend,
+        id || undefined,
+        friend || undefined,
         []
     );
 
