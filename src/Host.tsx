@@ -7,7 +7,7 @@ function Host() {
     return (
         <>
             <h1>Peerjs test</h1>
-            <p>Id: {id ?? 'None'}</p>
+            <p>Id: {id ?? 'Loading...'}</p>
             {connections ? (
                 <p>{connections} connected</p>
             ) : (

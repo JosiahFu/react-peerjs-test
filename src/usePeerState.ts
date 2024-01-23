@@ -48,7 +48,7 @@ function useClientState<T>(peerId: string | undefined, initialState?: T): [T | u
         connection?.send(value);
     }
 
-    return [state, handleSetState, connection !== undefined];
+    return [state, handleSetState, connection?.open ?? false];
 }
 
 function useHostState<T>(): [state: T | undefined, setState: (value: T) => void, identifier: string | undefined, connections: number];
