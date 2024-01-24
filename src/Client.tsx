@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Chat from './Chat';
 import StringInput from './StringInput';
-import { useClientState } from './usePeerState';
+import { useClientState } from '@tater-archives/react-use-peer-state';
 
 function Client() {
     const [friend, setFriend] = useState<string>('');
